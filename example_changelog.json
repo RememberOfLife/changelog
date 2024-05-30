@@ -1,0 +1,49 @@
+// visual version at <yourwebsitehere>
+{
+    "project": "Some Project",
+    "versions": [
+        {
+            "version": "1",
+            "date": "2024-05-26",
+            "name": "First Release",
+            "highlights": [
+                "* fancy new feature",
+                "* and something else"
+            ],
+            "breaking": [
+                ": added one more argument to this function <code>stuff</code>, thats <b>very</b> important!",
+                "- removed old api"
+            ],
+            "blocks": [
+                {
+                    "name": "Preamble",
+                    "text": [
+                        "First line.",
+                        "Second Line."
+                    ]
+                },
+                {
+                    "name": "API/mylib.h", // name is optional for blocks
+                    "changes": [
+                        "+ added another thing",
+                        ["- removed something", "c9b09f614858bdc460461d870335ffb876168d90"],
+                        ["x fixed annoying bug where nothing happened ever", "c9b09f614858bdc460461d870335ffb876168d90", "68c91ffb80376dbc01438587d905d0f64864b961"],
+                        {"d": ": changed something about how bugs may happen"},
+                        "? inline text block",
+                        {"d": ": swapped the occurences of some bugs so it always remains unforeseen which bug you might be getting on each individual usage", "c": "68c91ffb80376dbc01438587d905d0f64864b961"}
+                    ]
+                }
+            ]
+        },
+        {
+            "version": "0.5-alpha",
+            "date": "2024-05-25",
+            "changes": [
+                "x fixed some bug",
+                "!+ added auto breakage detection",
+                "* auto splitting of highlights",
+                "? do we stil have inline blocks?"
+            ]
+        }
+    ]
+}

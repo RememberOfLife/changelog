@@ -1,0 +1,25 @@
+
+----------------------
+#42 The Big Update
+1.23.4 (2024-05-26)
+----------------------
+
+=? Group
+Normal Text
+Linebreak for free
+Use very stripped down **markdown** for emph and `inline code` when required.
+
+= TLDR
+* Feature 1
+* Feature 2
+
+=! Breaking
++ Broke
+- Thing
+
+= Others
++ Add
+- Remove
+? inline text
+: Change
+x Bugfix
