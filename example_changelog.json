@@ -16,14 +16,13 @@
             ],
             "blocks": [
                 {
-                    "name": "Preamble",
                     "text": [
                         "First line.",
                         "Second Line."
                     ]
                 },
                 {
-                    "name": "API/mylib.h", // name is optional for blocks
+                    "name": "API/mylib.h",
                     "changes": [
                         "+ added another thing",
                         ["- removed something", "c9b09f614858bdc460461d870335ffb876168d90"],
