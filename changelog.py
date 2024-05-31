@@ -200,6 +200,8 @@ def main(args):
     parser.add_argument("outdir")
     args = parser.parse_args()
 
+    #TODO allow parsing from txt style logs
+
     project, parsed_versions = parse_changelog(args.changelog)
 
     if True:
