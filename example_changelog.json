@@ -5,19 +5,25 @@
             "version": "1",
             "date": "2024-05-26",
             "name": "First Release",
-            "highlights": [
-                "* fancy new feature",
-                "* and something else"
-            ],
-            "breaking": [
-                ": added one more argument to this function <code>stuff</code>, thats <b>very</b> important!",
-                "- removed old api"
-            ],
             "blocks": [
                 {
                     "text": [
                         "First line.",
                         "Second Line."
+                    ]
+                },
+                {
+                    "name": "Highlights",
+                    "highlights": [
+                        "* fancy new feature",
+                        "* and something else"
+                    ]
+                },
+                {
+                    "name": "Breaking",
+                    "breaking": [
+                        ": added one more argument to this function <code>stuff</code>, thats <b>very</b> important!",
+                        "- removed old api"
                     ]
                 },
                 {

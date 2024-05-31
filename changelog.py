@@ -54,7 +54,7 @@ def parse_change_type(text):
         raise ValueError
 
 
-def parse_change_line(line, allow_breaking, allow_features, only_features):
+def parse_change_line(line, allow_breaking, allow_features, only_features, all_breaking):
     change_type = None
     breaking = False
     text = None
@@ -68,13 +68,14 @@ def parse_change_line(line, allow_breaking, allow_features, only_features):
         refs = line[1:]
     elif type(line) is dict:
         text = line["d"]
-        drefs = line["c"]
-        if type(drefs) is str:
-            refs.append(drefs)
-        elif type(drefs) is list:
-            refs = drefs
-        else:
-            raise ValueError
+        if "c" in line:
+            drefs = line["c"]
+            if type(drefs) is str:
+                refs.append(drefs)
+            elif type(drefs) is list:
+                refs = drefs
+            else:
+                raise ValueError
     else:
         raise ValueError
     change_type, breaking = parse_change_type(text)
@@ -86,6 +87,8 @@ def parse_change_line(line, allow_breaking, allow_features, only_features):
         raise ValueError
     if only_features and change_type != Change.FEATURE:
         raise ValueError
+    if all_breaking:
+        breaking = True
     return (change_type, breaking, text[2+(1 if breaking else 0):], refs)
 
 
@@ -96,10 +99,12 @@ def parse_changelog(path):
     project = changelog["project"]
     parsed_versions = []
     for version in changelog["versions"]:
-        new_version = {}
-        new_version["version"] = version["version"]
-        new_version["date"] = version["date"]
-        new_version["name"] = None
+        new_version = {
+            "version": version["version"],
+            "date": version["date"],
+            "name": None,
+            "blocks": []
+        }
         blocks = []
         if "name" in version and type(version["name"] is str):
             new_version["name"] = version["name"]
@@ -110,10 +115,10 @@ def parse_changelog(path):
             lines_general = []
             lines_fixes = []
             for line in version["changes"]:
-                parsed_line = parse_change_line(line, True, True, False)
-                #TODO auto-sort feature can be turned off
+                parsed_line = parse_change_line(line, True, True, False, False)
+                #TODO auto-sort into *different* blocks feature can be turned off
                 #TODO possibly we do not want to allow inline text in auto-block mode
-                #TODO auto sort for breaking and general, i.e. inlinetext>add>change>remove>fix
+                #TODO auto-sort for breaking and general, i.e. inlinetext>add>change>remove>fix
                 if parsed_line[0] is Change.FEATURE:
                     lines_features.append(parsed_line)
                 elif parsed_line[1] is True:
@@ -125,28 +130,59 @@ def parse_changelog(path):
             if len(lines_features) > 0:
                 blocks.append({
                     "name": None,
-                    "changes": lines_features
+                    "pure_text": False,
+                    "lines": lines_features
                 })
             if len(lines_breaking) > 0:
                 blocks.append({
                     "name": None,
-                    "changes": lines_breaking
+                    "pure_text": False,
+                    "lines": lines_breaking
                 })
             if len(lines_general) > 0:
                 blocks.append({
                     "name": None,
-                    "changes": lines_general
+                    "pure_text": False,
+                    "lines": lines_general
                 })
             if len(lines_fixes) > 0:
                 blocks.append({
                     "name": None,
-                    "changes": lines_fixes
+                    "pure_text": False,
+                    "lines": lines_fixes
                 })
         elif "blocks" in version:
-            # parse optional highlights
-            # parse optional breaking
-            # parse blocks
-            pass
+            seen_highlights = False
+            seen_breaking = False
+            for block in version["blocks"]:
+                parsed_block = {
+                    "name": None,
+                    "pure_text": False,
+                    "lines": []
+                }
+                if "name" in block and type(block["name"] is str):
+                    parsed_block["name"] = block["name"]
+                if "text" in block and type(block["text"] is list):
+                    parsed_block["pure_text"] = True
+                    parsed_block["lines"] = block["text"]
+                elif "highlights" in block and type(block["highlights"] is list):
+                    if seen_highlights:
+                        raise ValueError
+                    seen_highlights = True
+                    for line in block["highlights"]:
+                        parsed_block["lines"].append(parse_change_line(line, False, True, True, False))
+                elif "breaking" in block and type(block["breaking"] is list):
+                    if seen_breaking:
+                        raise ValueError
+                    seen_breaking = True
+                    for line in block["breaking"]:
+                        parsed_block["lines"].append(parse_change_line(line, True, False, False, True))
+                elif "changes" in block and type(block["changes"] is list):
+                    for line in block["changes"]:
+                        parsed_block["lines"].append(parse_change_line(line, False, False, False, False))
+                else:
+                    raise ValueError
+                blocks.append(parsed_block)
         else:
             raise ValueError
         new_version["blocks"] = blocks
@@ -172,15 +208,9 @@ def main(args):
         for ver in parsed_versions:
             print(f"({ver["date"]}) v {ver["version"]} : {ver["name"]} [blocks {len(ver["blocks"])}]")
             for block in ver["blocks"]:
-                print(f"\t\tblock: {block["name"]}")
-                if "text" in block:
-                    for line in block["text"]:
-                        print(f"\t\t\t{line}")
-                elif "changes" in block:
-                    for change in block["changes"]:
-                        print(f"\t\t\t{change}")
-                else:
-                    raise ValueError
+                print(f"\t\tblock: {block["name"]} {"(pure-text)" if block["pure_text"] else ""}")
+                for line in block["lines"]:
+                    print(f"\t\t\t{line}")
 
     generate_pretty(project, parsed_versions, args.outdir)
 
