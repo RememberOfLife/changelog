@@ -151,7 +151,7 @@
 
             .log-block .ref {
                 font-family: monospace;
-                width: 5em;
+                width: 5.5em;
                 text-align: right;
                 margin-right: 0.2em;
             }

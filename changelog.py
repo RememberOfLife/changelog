@@ -250,7 +250,7 @@ def make_template_data_individual(project, versions, max_num):
                         "type": line[0].html_type_class(),
                         "prefix": line[0].html_entity(),
                         "text": line[2],
-                        "refs": None if len(line[3]) == 0 else "<br>".join([f"[{tl[0:6]}]" for tl in line[3]]),
+                        "refs": None if len(line[3]) == 0 else "<br>".join([f"[{tl[0:7]}]" for tl in line[3]]),
                     }
                     template_block["lines"].append(template_line)
             template_version["blocks"].append(template_block)
