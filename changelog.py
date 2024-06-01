@@ -217,9 +217,9 @@ def parse_changelog(path, acs_sort_type, acs_split_blocks):
     return (project, parsed_versions)
 
 
-def make_template_data(project, versions, max_num):
+def make_template_data_individual(project, versions, max_num):
     rtd = {
-        "page_title": f"{project} Changelog {versions[0]["version"] if len(versions) == 1 else "ALL"}",
+        "page_title": f"{project} Changelog v{versions[0]["version"]}" if len(versions) == 1 else f"{project} Full Changelog",
         "project_name": project,
         "versions": [],
     }
@@ -256,23 +256,55 @@ def make_template_data(project, versions, max_num):
     return rtd
 
 
+def make_template_data_index(project, versions, max_num):
+    rtd = {
+        "page_title": f"{project} Changelog Index",
+        "project_name": project,
+        "index_versions": [],
+    }
+    ctr = max_num
+    for version in versions:
+        template_version = {
+            "num": ctr,
+            "name": version["name"],
+            "version": version["version"],
+            "date": version["date"],
+            "breaking": False,
+            "href": f"{ctr}_v{version["version"]}.html",
+        }
+        ctr -= 1
+        for block in version["blocks"]:
+            if block["breaking"]:
+                template_version["breaking"] = True
+                break
+        rtd["index_versions"].append(template_version)
+    return rtd
+
+
 def generate_pretty(project, parsed_versions, path):
     ctr = len(parsed_versions)
+    # index list
+    changelog_template_data = make_template_data_index(project, parsed_versions, ctr)
+    with open(f"{SCR_DIR}/changelog.html.mst", "r") as changelog_template:
+        rendered_changelog = chevron.render(changelog_template, changelog_template_data)
+        with open(f"{path}/index.html", "w") as version_file:
+            version_file.write(rendered_changelog)
     # all versions at once
-    changelog_template_data = make_template_data(project, parsed_versions, ctr)
+    changelog_template_data = make_template_data_individual(project, parsed_versions, ctr)
     with open(f"{SCR_DIR}/changelog.html.mst", "r") as changelog_template:
         rendered_changelog = chevron.render(changelog_template, changelog_template_data)
         with open(f"{path}/all.html", "w") as version_file:
             version_file.write(rendered_changelog)
     # individual version
     for version in parsed_versions:
-        changelog_template_data = make_template_data(project, [version], ctr)
+        changelog_template_data = make_template_data_individual(project, [version], ctr)
         ctr -= 1
         with open(f"{SCR_DIR}/changelog.html.mst", "r") as changelog_template:
             rendered_changelog = chevron.render(changelog_template, changelog_template_data)
             #TODO sanitize version string as a filename?
-            with open(f"{path}/{changelog_template_data["versions"][0]["num"]}_{version["version"]}.html", "w") as version_file:
+            with open(f"{path}/{changelog_template_data["versions"][0]["num"]}_v{version["version"]}.html", "w") as version_file:
                 version_file.write(rendered_changelog)
+    
 
 
 def main(args):

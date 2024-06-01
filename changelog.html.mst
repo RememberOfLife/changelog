@@ -160,12 +160,80 @@
                 margin: 0;
                 text-align: justify;
             }
+
+            .project-name {
+                margin-bottom: 0;
+            }
+
+            .version {
+                padding: 0.3em 0.5em;
+                padding-left: 1.3em;
+                margin: 1em 0;
+                border: 1px solid lightgray;
+            }
+
+            .version.important {
+                padding-left: 0.5em;
+                border-left: 0.8em solid lightcoral; /* instead of crimson */
+            }
+
+            .version .version-line {
+                font-family: monospace;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .version a.version-info {
+                text-decoration: none;
+                color: inherit;
+                display: block;
+                background-color: lavender;
+                padding: 0 0.2em;
+            }
+
+            .version .version-info .num {
+                font-family: monospace;
+                font-variant: small-caps;
+                font-weight: bold;
+            }
+
+            .version .version-info .title {
+                font-variant: small-caps;
+                font-weight: bold;
+            }
         </style>
     </head>
 
     <body>
 
         <div id="changelog">
+
+            {{^ versions }}
+
+                <div id="info">
+                    <h1 class="project-name">{{ project_name }}</h1>
+                </div>
+
+                <hr>
+
+                <div class="versions-index">
+
+                    {{# index_versions }}
+                    <div class="version {{# breaking }}important{{/ breaking }}">
+                        <div class="version-line">
+                            <span class="ver">v {{ version }}</span>
+                            <span class="date">{{ date }}</span>
+                        </div>
+                        <a class="version-info" href="{{ href }}">
+                            <span class="num">#{{ num }}</span>
+                            <span class="title">{{ name }}</span>
+                        </a>
+                    </div>
+                    {{/ index_versions }}
+
+                </div>
+
+            {{/ versions}}
             
             {{# versions }}
 
@@ -181,7 +249,7 @@
                 <hr>
 
                 {{# blocks }}
-                    <div class="log-block {{#breaking}}important{{/breaking}}">
+                    <div class="log-block {{# breaking }}important{{/ breaking }}">
                         {{# name }}
                             <div class="block-name">{{ . }}</div>
                         {{/ name }}
@@ -192,7 +260,7 @@
                         {{/ pure_text }}
                         {{^ pure_text }}
                             {{# lines }}
-                                <div class="line {{type}}">
+                                <div class="line {{ type }}">
                                     <span class="prefix">{{& prefix }}</span>
                                     <span class="content">{{& text }}</span>
                                     {{# refs }}
