@@ -201,12 +201,24 @@
                 font-variant: small-caps;
                 font-weight: bold;
             }
+
+            a#navigation {
+                text-decoration: none;
+                color: inherit;
+                display: block;
+                background-color: lavender;
+                padding: 0 0.2em;
+                top: 0;
+                text-align: center;
+            }
         </style>
     </head>
 
     <body>
 
         <div id="changelog">
+
+            <a id="navigation" href="{{ navi_href }}.html">{{ navi_text }}</a>
 
             {{^ versions }}
 

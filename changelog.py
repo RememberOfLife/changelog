@@ -222,6 +222,8 @@ def make_template_data_individual(project, versions, max_num):
         "page_title": f"{project} Changelog v{versions[0]["version"]}" if len(versions) == 1 else f"{project} Full Changelog",
         "project_name": project,
         "versions": [],
+        "navi_href": "index",
+        "navi_text": "Changelog Index",
     }
     ctr = max_num
     for version in versions:
@@ -261,6 +263,8 @@ def make_template_data_index(project, versions, max_num):
         "page_title": f"{project} Changelog Index",
         "project_name": project,
         "index_versions": [],
+        "navi_href": "all",
+        "navi_text": "Full Changelog",
     }
     ctr = max_num
     for version in versions:
