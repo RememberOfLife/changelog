@@ -257,15 +257,22 @@ def make_template_data(project, versions, max_num):
 
 
 def generate_pretty(project, parsed_versions, path):
-        ctr = len(parsed_versions)
-        for version in parsed_versions:
-            changelog_template_data = make_template_data(project, [version], ctr)
-            ctr -= 1
-            with open(f"{SCR_DIR}/changelog.html.mst", "r") as changelog_template:
-                rendered_changelog = chevron.render(changelog_template, changelog_template_data)
-                #TODO sanitize version string as a filename?
-                with open(f"{path}/{changelog_template_data["versions"][0]["num"]}_{version["version"]}.html", "w") as version_file:
-                    version_file.write(rendered_changelog)
+    ctr = len(parsed_versions)
+    # all versions at once
+    changelog_template_data = make_template_data(project, parsed_versions, ctr)
+    with open(f"{SCR_DIR}/changelog.html.mst", "r") as changelog_template:
+        rendered_changelog = chevron.render(changelog_template, changelog_template_data)
+        with open(f"{path}/all.html", "w") as version_file:
+            version_file.write(rendered_changelog)
+    # individual version
+    for version in parsed_versions:
+        changelog_template_data = make_template_data(project, [version], ctr)
+        ctr -= 1
+        with open(f"{SCR_DIR}/changelog.html.mst", "r") as changelog_template:
+            rendered_changelog = chevron.render(changelog_template, changelog_template_data)
+            #TODO sanitize version string as a filename?
+            with open(f"{path}/{changelog_template_data["versions"][0]["num"]}_{version["version"]}.html", "w") as version_file:
+                version_file.write(rendered_changelog)
 
 
 def main(args):
