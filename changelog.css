@@ -64,7 +64,7 @@ hr {
     margin-top: 1em;
 }
 
-.log-block.highlight {
+.log-block.important {
     padding: 0.4em 0.5em;
     border-left: 0.8em solid crimson;
     border-right: 0.8em solid crimson;
@@ -85,8 +85,13 @@ hr {
     padding: 0.15em 0;
 }
 
-.log-block .line.tldr {
+.log-block .line.highlight {
     background-color: gold;
+}
+
+.log-block .line.inline-text {
+    text-align: justify;
+    border: 1px solid black;
 }
 
 .log-block .line.added {
@@ -125,6 +130,7 @@ hr {
     flex: 1;
     flex-grow: 1;
     text-align: justify;
+    padding-right: 1em;
 }
 
 .log-block .content code {
@@ -145,12 +151,4 @@ hr {
 .log-block .text {
     margin: 0;
     text-align: justify;
-}
-
-.log-block .line-text {
-    margin: 0;
-    margin-top: 2px;
-    text-align: justify;
-    border: 1px solid black;
-    padding: 0.3em 0.5em;
 }

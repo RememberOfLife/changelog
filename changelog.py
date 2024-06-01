@@ -6,9 +6,6 @@ import os
 import sys
 
 
-# third-party imports
-
-
 SCR_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCR_DIR)
 # local chevron copy, make the import less hacky
@@ -22,6 +19,12 @@ class Change(Enum):
     CHANGE = 4
     REMOVE = 5
     FIX = 6
+
+    def html_type_class(self):
+        return ["highlight", "inline-text", "added", "changed", "removed", "fixed"][self.value - 1]
+    
+    def html_entity(self):
+        return ["&starf;", None, "+", "&bull;", "&ndash;", "&times;"][self.value - 1]
 
 
 def parse_change_type(text):
@@ -87,9 +90,7 @@ def parse_change_line(line, allow_breaking, allow_features, only_features, all_b
         raise ValueError
     if only_features and change_type != Change.FEATURE:
         raise ValueError
-    if all_breaking:
-        breaking = True
-    return (change_type, breaking, text[2+(1 if breaking else 0):], refs)
+    return (change_type, breaking or all_breaking, text[2+(1 if breaking else 0):], refs)
 
 
 def parse_changelog(path):
@@ -103,7 +104,7 @@ def parse_changelog(path):
             "version": version["version"],
             "date": version["date"],
             "name": None,
-            "blocks": []
+            "blocks": [],
         }
         blocks = []
         if "name" in version and type(version["name"] is str):
@@ -130,26 +131,30 @@ def parse_changelog(path):
             if len(lines_features) > 0:
                 blocks.append({
                     "name": None,
+                    "breaking": False,
                     "pure_text": False,
-                    "lines": lines_features
+                    "lines": lines_features,
                 })
             if len(lines_breaking) > 0:
                 blocks.append({
                     "name": None,
+                    "breaking": True,
                     "pure_text": False,
-                    "lines": lines_breaking
+                    "lines": lines_breaking,
                 })
             if len(lines_general) > 0:
                 blocks.append({
                     "name": None,
+                    "breaking": False,
                     "pure_text": False,
-                    "lines": lines_general
+                    "lines": lines_general,
                 })
             if len(lines_fixes) > 0:
                 blocks.append({
                     "name": None,
+                    "breaking": False,
                     "pure_text": False,
-                    "lines": lines_fixes
+                    "lines": lines_fixes,
                 })
         elif "blocks" in version:
             seen_highlights = False
@@ -157,8 +162,9 @@ def parse_changelog(path):
             for block in version["blocks"]:
                 parsed_block = {
                     "name": None,
+                    "breaking": False,
                     "pure_text": False,
-                    "lines": []
+                    "lines": [],
                 }
                 if "name" in block and type(block["name"] is str):
                     parsed_block["name"] = block["name"]
@@ -175,6 +181,7 @@ def parse_changelog(path):
                     if seen_breaking:
                         raise ValueError
                     seen_breaking = True
+                    parsed_block["breaking"] = True
                     for line in block["breaking"]:
                         parsed_block["lines"].append(parse_change_line(line, True, False, False, True))
                 elif "changes" in block and type(block["changes"] is list):
@@ -190,22 +197,69 @@ def parse_changelog(path):
     return (project, parsed_versions)
 
 
+def make_template_data(project, versions, max_num):
+    rtd = {
+        "page_title": f"{project} Changelog {versions[0]["version"] if len(versions) == 1 else "ALL"}",
+        "project_name": project,
+        "versions": [],
+    }
+    ctr = max_num
+    for version in versions:
+        template_version = {
+            "num": ctr,
+            "name": version["name"],
+            "version": version["version"],
+            "date": version["date"],
+            "blocks": [],
+        }
+        ctr -= 1
+        for block in version["blocks"]:
+            template_block = {
+                "breaking": block["breaking"],
+                "name": block["name"],
+                "pure_text": block["pure_text"],
+                "lines": []
+            }
+            if block["pure_text"]:
+                template_block["lines"] = block["lines"]
+            else:
+                for line in block["lines"]:
+                    template_line = {
+                        "type": line[0].html_type_class(),
+                        "prefix": line[0].html_entity(),
+                        "text": line[2],
+                        "refs": None if len(line[3]) == 0 else "<br>".join([f"[{tl[0:6]}]" for tl in line[3]]),
+                    }
+                    template_block["lines"].append(template_line)
+            template_version["blocks"].append(template_block)
+        rtd["versions"].append(template_version)
+    return rtd
+
+
 def generate_pretty(project, parsed_versions, path):
-    pass
+        ctr = len(parsed_versions)
+        for version in parsed_versions:
+            changelog_template_data = make_template_data(project, [version], ctr)
+            ctr -= 1
+            with open(f"{SCR_DIR}/changelog.html.mst", "r") as changelog_template:
+                rendered_changelog = chevron.render(changelog_template, changelog_template_data)
+                #TODO sanitize version string as a filename?
+                with open(f"{path}/{changelog_template_data["versions"][0]["num"]}_{version["version"]}.html", "w") as version_file:
+                    version_file.write(rendered_changelog)
 
 
 def main(args):
     parser = argparse.ArgumentParser(prog="changelog.py")
     parser.add_argument("changelog")
     parser.add_argument("outdir")
+    parser.add_argument("--rit", dest="readin_test", action="store_true")
+    parser.add_argument("--acs-sort-type", dest="acs_sort_type", action="store_true")
     args = parser.parse_args()
-
-    #TODO allow parsing from txt style logs
 
     project, parsed_versions = parse_changelog(args.changelog)
 
-    if True:
-        # debug print
+    # debug print
+    if args.readin_test:
         print(f"project: {project}")
         for ver in parsed_versions:
             print(f"({ver["date"]}) v {ver["version"]} : {ver["name"]} [blocks {len(ver["blocks"])}]")

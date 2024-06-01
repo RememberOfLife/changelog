@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{{ page_title }}</title>
+        <link href="../changelog.css" rel="stylesheet">
+    </head>
+
+    <body>
+
+        <div id="changelog">
+            
+            {{# versions }}
+
+                <div id="info">
+                    <h1 class="topline"><span class="num">#{{ num }}</span> {{ name }}</h1>
+                    <div class="monoline">
+                        <span>v {{ version }}</span>
+                        <span>{{ project_name }}</span>
+                        <span>{{ date }}</span>
+                    </div>
+                </div>
+
+                <hr>
+
+                {{# blocks }}
+                    <div class="log-block {{#breaking}}important{{/breaking}}">
+                        {{# name }}
+                            <div class="block-name">{{ . }}</div>
+                        {{/ name }}
+                        {{# pure_text }}
+                            {{# lines }}
+                                <p class="text">{{& . }}</p>
+                            {{/ lines }}
+                        {{/ pure_text }}
+                        {{^ pure_text }}
+                            {{# lines }}
+                                <div class="line {{type}}">
+                                    <span class="prefix">{{& prefix }}</span>
+                                    <span class="content">{{& text }}</span>
+                                    {{# refs }}
+                                    <span class="ref">{{& . }}</span>
+                                    {{/ refs }}
+                                </div>
+                            {{/ lines }}
+                        {{/ pure_text }}
+                    </div>
+                {{/ blocks }}
+
+            {{/ versions }}
+
+        </div>
+
+        <!-- <script src="changelog.js"></script> -->
+
+    </body>
+
+</html>
