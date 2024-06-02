@@ -6,10 +6,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ page_title }}</title>
         <style>
-            body {
+            html, body {
                 font-family: sans-serif;
                 margin: 0;
-                padding: none;
+                padding: 0;
             }
 
             #changelog {
@@ -120,7 +120,6 @@
 
             .log-block .prefix {
                 flex: 0 0 1.3em;
-                display: flex;
                 display: inline-block;
                 width: 1.3em;
                 text-align: center;
@@ -129,9 +128,13 @@
             }
 
             /* maybe remove this */
+            .line.highlight .prefix {
+                position: relative;
+                top: -0.07em;
+            }
             .line.removed .prefix {
                 position: relative;
-                top: -0.15em;
+                top: -0.1em;
             }
 
             .log-block .content {
@@ -202,7 +205,7 @@
                 font-weight: bold;
             }
 
-            a#navigation {
+            a#navigation-top {
                 text-decoration: none;
                 color: inherit;
                 display: block;
@@ -218,7 +221,7 @@
 
         <div id="changelog">
 
-            <a id="navigation" href="{{ navi_href }}.html">{{ navi_text }}</a>
+            <a id="navigation-top" href="{{ navi_href }}.html">{{ navi_text }}</a>
 
             {{^ versions }}
 
